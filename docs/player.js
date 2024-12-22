@@ -12,10 +12,11 @@ export class Player {
 
     /**
      * @param {number} best Best pontuation from actual game.
+     * @param {number} position Position of player in the ranking.
      * @returns 
      */
-    bar(best) {
-        return new Bar(this.name, Math.round(this.points / best * 100))
+    bar(best, position) {
+        return new Bar(this.name, Math.round(this.points / best * 100), position)
     }
 }
 

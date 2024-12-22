@@ -81,25 +81,41 @@ body {
 			background-color: pink;
 			width: 100px;
 
-			.bar {
+			.name {
+				background-color: chocolate;
+				flex: 0.1;
+			}
+
+			.container {
+				flex: 1;
+
 				display: flex;
-				justify-content: center;
-				align-items: center;
-				background-color: red;
-				height: 100%;
-				width: 60px;
-				border-radius: 15px;
-				
-				.position {
-					display: flex;
-					align-items: center;
-					justify-content: center;
-					border-radius: 100%;
-					width: 30px;
-					height: 30px;
-					background-color: yellow;
+				align-items: flex-end;
+
+				background-color: green;
+
+				.bar {
 					
+					background-color: red;
+					width: 60px;
+					border-radius: 15px;
 				}
+			}
+
+			.position {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				border-radius: 100%;
+				aspect-ratio: 1 1;
+				width: 2rem;
+				height: 2rem;
+				background-color: yellow;
+
+				min-height: 2rem;
+
+				flex: 0.1;
+				
 			}
 		}
 	}

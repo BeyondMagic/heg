@@ -2,8 +2,9 @@ export class Bar extends HTMLElement {
     /**
      * @param {string} name
      * @param {number} percentage 
+     * @param {number} position 
      */
-    constructor(name, percentage) {
+    constructor(name, percentage, position) {
         super()
 
         /**
@@ -22,10 +23,18 @@ export class Bar extends HTMLElement {
 
         const bar = document.createElement("div");
         bar.classList.add('bar')
-        bar.style.height = percentage.toString() + '%'
+        bar.style.height = `${percentage}%`;
 
+        const container = document.createElement("div");
+        container.classList.add('container')
+        container.append(bar)
 
-        this.append(label, bar)
+        const rank = document.createElement("div");
+        rank.classList.add('position')
+        rank.style.fontWeight = 'bold';
+        rank.textContent = `${position}`
+
+        this.append(label, container, rank)
     }
 
 }
