@@ -162,11 +162,39 @@ class Game {
      * Prepare the next player to play their turn.
      */
     screen_prepare() {
+        const startButton = document.createElement('div')
+        const instructions = document.createElement('div')
+        const playerTurn = document.createElement('div')
+
+        playerTurn.classList.add('player-turn')
+        playerTurn.textContent = `Vez de ${this.players[0].name} jogar!`
+        instructions.textContent = 'Prepare-se para jogar!\nClique em Começar quando estiver pronto!'
+        startButton.classList.add('start')
+
+        startButton.addEventListener('click', () => {
+            instructions.style.display = "none";
+            startButton.style.display = "none";
+
+            let timer = 3;
+            const countdown = document.createElement('h2')
+            countdown.textContent = timer;
+
+            const interval = setInterval(() => {
+                timer -= 1;
+                if(time > 0)
+                    constdown.textContent = timer;
+                else {
+                    clearInterval(interval)
+                    countdown.textContent = 'Vai!'
+                
+                }
+            this.body.append(countdown)
+            this.screen('play')
+            }, 1000)
+        })
 
         console.log(this.players)
-
     }
-
 }
 
 const body = document.querySelector('.content')
