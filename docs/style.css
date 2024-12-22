@@ -135,6 +135,18 @@ body {
 		}
 	}
 
+	>.button {
+
+		padding: 0.5rem 2rem;
+		font-weight: bolder;
+		font-size: 2rem;
+		cursor: pointer;
+		
+		&.continue {
+			background-color: aquamarine;
+		}
+	}
+
 	.players {
 
 		&.cards {

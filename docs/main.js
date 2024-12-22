@@ -66,6 +66,9 @@ class Game {
             case 'selection':
                 this.screen_selection()
                 break;
+            case 'prepare':
+                this.screen_prepare()
+                break;
         }
 
     }
@@ -135,7 +138,33 @@ class Game {
         container_add.append(add)
         container.append(container_add)
 
-        this.body.append(container)
+        /**
+         * Button to continue.
+         */
+        const button = document.createElement('div');
+        button.classList.add('button', 'continue')
+        button.textContent = 'Seguir!'
+        button.addEventListener('click', () => {
+
+            const player_cards = /** @type {NodeListOf<PlayerCard>} */ (container.querySelectorAll('player-card'))
+
+            for (const player_card of player_cards)
+                this.players.push(new Player(player_card.name, 0))
+
+            return this.screen('prepare')
+        })
+
+
+        this.body.append(container, button)
+    }
+
+    /**
+     * Prepare the next player to play their turn.
+     */
+    screen_prepare() {
+
+        console.log(this.players)
+
     }
 
 }
