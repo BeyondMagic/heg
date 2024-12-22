@@ -38,6 +38,12 @@ body {
 	}
 }
 
+.center {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
 .content {
 	padding: 60px;
 	background-color: blue;
@@ -72,7 +78,7 @@ body {
 		background-color: aqua;
 		height: 100%;
 
-		ranking-bar {
+		ranking-player {
 			display: flex;
 			justify-content: flex-end;
 			align-items: center;
@@ -82,41 +88,96 @@ body {
 			width: 100px;
 
 			.name {
-				background-color: chocolate;
+				
 				flex: 0.1;
 			}
 
 			.container {
-				flex: 1;
 
-				display: flex;
-				align-items: flex-end;
+				&.name {
+					flex: 0.1;
 
-				background-color: green;
+					.name {
+						font-weight: bolder;
+					}
+				}
 
-				.bar {
-					
+				&.bar {
+					flex: 1;
+
+					display: flex;
+					align-items: flex-end;
+
+					background-color: green;
+
+					.bar {
+
+						background-color: red;
+						width: 60px;
+						border-radius: 15px;
+					}
+				}
+			
+				&.rank {
+					flex: 0.1;
+
+					.rank {
+
+						border-radius: 100%;
+						aspect-ratio: 1 / 1;
+						width: 2rem;
+						background-color: yellow;
+	
+						min-height: 2rem;
+					}					
+				}
+			}
+		}
+	}
+
+	.players {
+
+		&.cards {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			flex-wrap: wrap;
+			row-gap: 1rem;
+			column-gap: 1rem;
+			padding: 1rem;
+
+			background-color: aqua;
+
+			.container {
+				.add {
+					aspect-ratio: 1 / 1;
+					width: 2rem;
+
+					font-size: 1.5rem;
+					font-weight: bold;
+
 					background-color: red;
-					width: 60px;
-					border-radius: 15px;
+					color: black;
+
+					cursor: pointer;
 				}
 			}
 
-			.position {
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				border-radius: 100%;
-				aspect-ratio: 1 1;
-				width: 2rem;
-				height: 2rem;
-				background-color: yellow;
+			player-card {
+				background-color: red;
 
-				min-height: 2rem;
+				input {
+					background-color: blueviolet;
+					text-align: center;
+				}
 
-				flex: 0.1;
-				
+				.remove {
+					text-align: center;
+					cursor: pointer;
+				}
 			}
+
 		}
+
 	}
 }

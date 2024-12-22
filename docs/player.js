@@ -1,4 +1,4 @@
-import { Bar } from "./ranking.js"
+import { Ranking } from "./ranking.js"
 
 export class Player {
     /**
@@ -15,8 +15,12 @@ export class Player {
      * @param {number} position Position of player in the ranking.
      * @returns 
      */
-    bar(best, position) {
-        return new Bar(this.name, Math.round(this.points / best * 100), position)
+    ranking(best, position) {
+        return new Ranking(
+            this.name,
+            Math.round(this.points / best * 100),
+            position
+        )
     }
 }
 
