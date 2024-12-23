@@ -2,9 +2,7 @@
  * @typedef {import('../game.js').Game} Game
  */
 
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
+import { sleep } from '../utils.js';
 
 /**
  * @param {Game} game

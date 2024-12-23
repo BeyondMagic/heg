@@ -63,7 +63,7 @@ const game = new Game(
 );
 
 game.screen('home')
-// game.screen('selection')
-// game.screen('config')
-// game.screen('prepare')
+//game.screen('selection')
+//game.screen('config')
+//game.screen('prepare')
 // game.screen('play')
