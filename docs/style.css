@@ -139,10 +139,9 @@ body {
 		}
 	}
 
-	>.button {
+	.button {
 
 		font-weight: bolder;
-		font-size: 2rem;
 		cursor: pointer;
 		text-align: center;
 
@@ -169,6 +168,7 @@ body {
 
 		&.add {
 			color: blue;
+			font-size: 2rem;
 		}
 	}
 	.players {
