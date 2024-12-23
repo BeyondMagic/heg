@@ -1,43 +1,76 @@
 import { Module } from "../module.js"
 
 /**
- * @param {number} min
- * @param {number} max
- * @param {number} amount
- * @returns {Array<number>} 
+ * Return a random number in the the range min to max (inclusive).
+ * @param {number} min 
+ * @param {number} max 
+ * @returns {number}
  */
-function generateRandomNumbers(min, max, amount) {
-    const numbers = new Set()
-    while (numbers.size < amount) {
-        const randomNum = Math.floor(Math.random() * (max - min + 1)) + min
-        numbers.add(randomNum)
-    }
-    return Array.from(numbers)
+function random(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min
 }
 
 /**
-* @param {"tutorial" | "easy" | "mid" | "hard" | string} difficulty 
+ * Returns
+ * @param {number} min
+ * @param {number} max
+ * @param {number} amount
+ * @returns {Array<string>} 
+ */
+function numbers(min, max, amount) {
+    const numbers = new Set()
+    while (numbers.size < amount)
+        numbers.add(random(min ,max).toString())
+    return Array.from(numbers)
+}
+/**
+* @param {"tutorial" | "fácil" | "médio" | "difícil" | string} difficulty 
 * @returns Array<string>
 */
-function render(difficulty) {
+export function render(difficulty) {
     switch (difficulty) {
+        // 2 ~ 3 numbers between 1 and 10
         case "tutorial":
-            return generateRandomNumbers(1, 10, Math.floor(Math.random() * (3 - 2 + 1)) + 2);// 2 ~ 3 numbers between 1 and 10
-        case "easy":
-            return generateRandomNumbers(1, 15, Math.floor(Math.random() * (9 - 4 + 1)) + 4) // 4 ~ 9 numbers between 1 and 15
-        case "mid":
-            return  generateRandomNumbers(1, 30, Math.floor(Math.random() * (19 - 10 + 1)) + 10) // 10 ~ 9 numbers between 1 and 30
-        case "hard":
-            return generateRandomNumbers(1, 50, Math.floor(Math.random() * (30 - 20 + 1)) + 20) // 20 ~ 30 numbers between 1 and 50
-        default:
-            return []
+            return numbers(
+                1, 
+                10, 
+                random(2, 3)
+            )
+
+        // 4 ~ 9 numbers between 1 and 15
+        case "fácil":
+            return numbers(
+                1,
+                15,
+                random(4, 9)
+            )
+
+        // 10 ~ 19 numbers between 1 and 30
+        case "médio":
+            return numbers(
+                1,
+                30,
+                random(10, 19)
+            )
+
+        // 20 ~ 30 numbers between 1 and 50
+        case "difícil":
+            return numbers(
+                1,
+                50,
+                random(20, 30)
+            )
     }
+    return []
 }
 
-export const Japanese = new Module(
-    "Frases japonesas",
+export const Numbers = new Module(
+    "Números",
     [
-        "easy"
+        "tutorial",
+        "fácil",
+        "médio",
+        "difícil"
     ],
     render
 )
