@@ -1,8 +1,9 @@
 /**
  * @typedef {import('../round.js').Round} Round
  * @typedef {import('../game.js').Game} Game
+ * @typedef {{total: number, took: number, swaps: number}} Turn
+ * @typedef {{interval: number, resolve: (value: void | PromiseLike<void>) => void}} Clear
  */
-
 
 import { Card } from '../card.js';
 import { Player } from '../player.js';
@@ -10,62 +11,6 @@ import { sleep, shuffle } from '../utils.js';
 import { prepare } from './prepare.js';  
 import { results } from './results.js';
 
-/**
- * Play a new game.
- * @param {Game} game
- */
-export async function play (game) {
-
-    for (const round of game.rounds)
-    {
-        const repeat = Number.parseInt(round.quantity.value)
-
-        for (let i = 1; i <= repeat; ++i)
-        {
-            const original = round.module.render(round.type.value)
-
-            const deck = {
-                original: original,
-                shuffled: shuffle(original)
-            }
-
-            const seconds = Number.parseInt(round.timer.value)
-
-            for (const player of game.players)
-            {
-                console.log(`Preparing ${player.name} to play ${round.name.value} in ${i} time.`)
-                game.clear()
-                await prepare(game, player)
-                await turn(game, player, deck, seconds)
-            }
-
-            game.clear()
-            results(game, 'between')
-        }
-    }
-
-    game.clear()
-    results(game, 'end')
-}
-
-/**
- * Start timer of this turn.
- * @param {HTMLElement} timer 
- * @param {number} seconds 
- * @returns {number}
- */
-function start_timer (timer, seconds) { 
-    const interval = window.setInterval(() => {
-        seconds--;
-        if (seconds) {
-            timer.textContent = `Tempo restante: ${seconds}!`
-        } else {
-            window.clearInterval(interval)
-        }
-    }, 1000)
-
-    return interval
-}
 
 /**
  * Update progress bar and returns if it's corrected.
@@ -77,18 +22,8 @@ function start_timer (timer, seconds) {
 function update_progress (original, player_cards, bar) {
 
     const correct = player_cards.reduce(
-        (accumulated, card, index) => {
-            
-            const text = card.textContent;
-            const orig = original[index];
-
-            
-
-            console.log(`card: ${text} "${text.length}", orig: "${orig}" ${orig.length}`, text === orig)
-
-            return (card.textContent === original[index] ? accumulated + 1 : accumulated)
-        }
-        
+        (accumulated, card, index) =>
+        (card.textContent === original[index] ? accumulated + 1 : accumulated)
     , 0)
 
     const progress = Math.round((correct / player_cards.length) * 100);
@@ -101,14 +36,39 @@ function update_progress (original, player_cards, bar) {
 
 /**
  * End this turn.
- * @param {number} interval 
- * @param {(value: void | PromiseLike<void>) => void} resolve 
+ * @param {Player} player 
+ * @param {Turn} time
+ * @param {Clear} clear
  */
-async function end (interval, resolve) {  
-    window.clearInterval(interval);
+async function end (player, time, clear) {  
+    window.clearInterval(clear.interval);
+
     // To-do: animation of ending.
-    await sleep(1000);
-    resolve()
+    console.log(`Player "${player.name} took"`, time)
+
+    await sleep(5000);
+    // To-do: calculate pontuation of player.
+
+    clear.resolve()
+}
+
+/**
+ * Start timer of this turn.
+ * @param {Player} player
+ * @param {HTMLElement} timer 
+ * @param {Turn} turn
+ * @param {(value: void | PromiseLike<void>) => void} resolve End the turn.
+ * @returns {number}
+ */
+function start_timer (player, timer, turn, resolve) { 
+    const interval = window.setInterval(() => {
+        if (--turn.took)
+            timer.textContent = `Tempo restante: ${turn.took}!`
+        else
+            end(player, turn, {interval, resolve})
+    }, 1000)
+
+    return interval
 }
 
 /**
@@ -153,8 +113,6 @@ async function turn (game, player, deck, seconds) {
      */
     let selected_card = null;
 
-    const interval = start_timer(container.timer, seconds)
-
     game.body.append(
         container.player,
         container.cards,
@@ -164,6 +122,23 @@ async function turn (game, player, deck, seconds) {
 
     // Resolve when `player_cards` is sorted.
     return new Promise(async resolve => {
+
+        /**
+         * @type {Turn}
+         */
+        const turn = {
+            total: seconds,
+            took: seconds,
+            swaps: 0
+        }
+
+        /**
+         * @type {Clear}
+         */
+        const clear = {
+            interval: start_timer(player, container.timer, turn, resolve),
+            resolve,
+        }
 
         /**
          * @type {Array<Card>}
@@ -193,15 +168,14 @@ async function turn (game, player, deck, seconds) {
                 
                 // If card different, swap.
                 } else {
-                    // To-do: ++swaps for this player.
-                    console.log(card.index, selected_card.index)
+                    ++player.swaps;
+                    ++turn.swaps;
                     card.swap(selected_card);
-                    console.log(card.index, selected_card.index)
 
                     const is_sorted = update_progress(deck.original, player_cards, bar)
                 
                     if (is_sorted)
-                        await end(interval, resolve);
+                        await end(player, turn, clear);
                 }
 
                 selected_card = null;
@@ -213,6 +187,44 @@ async function turn (game, player, deck, seconds) {
         const is_sorted = update_progress(deck.original, player_cards, bar)
                 
         if (is_sorted)
-            await end(interval, resolve);
+            await end(player, turn, clear);
     })
+}
+
+/**
+ * Play a new game.
+ * @param {Game} game
+ */
+export async function play (game) {
+
+    for (const round of game.rounds)
+    {
+        const repeat = Number.parseInt(round.quantity.value)
+
+        for (let i = 1; i <= repeat; ++i)
+        {
+            const original = round.module.render(round.type.value)
+
+            const deck = {
+                original: original,
+                shuffled: shuffle(original)
+            }
+
+            const seconds = Number.parseInt(round.timer.value)
+
+            for (const player of game.players)
+            {
+                console.log(`Preparing ${player.name} to play ${round.name.value} in ${i} time.`)
+                game.clear()
+                await prepare(game, player)
+                await turn(game, player, deck, seconds)
+            }
+
+            game.clear()
+            results(game, 'between')
+        }
+    }
+
+    game.clear()
+    results(game, 'end')
 }
