@@ -1,5 +1,6 @@
 /**
  * @typedef {import('../game.js').Game} Game
+ * @typedef {import('../player.js').Player} Player
  */
 
 import { sleep } from '../utils.js';
@@ -10,13 +11,10 @@ const delay_after_timer = 1000;
 /**
  * Prepare the next player to play their turn.
  * @param {Game} game
+ * @param {Player} player Player to prepare.
+ * @returns {Promise<void>}
  */
-export function prepare(game) {
-
-    /**
-     * Next player to play is the first one in the list.
-     */
-    const player = game.players[0]
+export async function prepare(game, player) {
     
     const turn = document.createElement('div')
     turn.classList.add('player-turn')
@@ -34,23 +32,27 @@ export function prepare(game) {
     countdown.classList.add('timer')
     game.body.append(countdown)
 
-    start.addEventListener('click', async () => {
-        start.remove()
-        instructions.remove()
-    
-        let timer = seconds_to_start;
-        while (timer)
-        {
-            countdown.textContent = `${timer} segundos!`;
-            --timer;
-        }
-
-        countdown.textContent = 'Vai!'
-
-        await sleep(delay_after_timer);
-
-        game.screen('play')
-    })
-    
     game.body.append(turn, instructions, start)
+
+    return new Promise(resolve => {
+        start.addEventListener('click', async () => {
+
+            start.remove()
+            instructions.remove()
+        
+            let timer = seconds_to_start;
+            while (timer)
+            {
+                countdown.textContent = `${timer} segundos!`;
+                --timer;
+                await sleep(1000);
+            }
+
+            countdown.textContent = 'Vai!'
+
+            await sleep(delay_after_timer);
+
+            resolve();
+        })
+    })
 }

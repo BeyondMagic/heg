@@ -22,7 +22,7 @@ export class Module {
 		this.types = types
 
 		/**
-		 * Render deck.
+		 * Render deck, return a sorted array by type.
 		 **/
 		this.render = render
 	}

@@ -20,7 +20,7 @@ export class Round extends HTMLElement {
      * @param {string} name 
      * @param {string} type 
      * @param {number} quantity 
-     * @param {number} timer 
+     * @param {number} timer
      */
     constructor(name, type, quantity, timer) {
         super()
@@ -31,6 +31,11 @@ export class Round extends HTMLElement {
          * Saved name of round to use on re-render.
          */
         this.pre_name = name
+
+        /**
+         * Saved name of type to use on re-render.
+         */
+        this.pre_type = type
 
         /**
          * Module of this round.
@@ -80,11 +85,11 @@ export class Round extends HTMLElement {
         /**
          * Select how many this rounds should repeat.
          */
-        this.rounds = document.createElement('input')
-        this.rounds.classList.add('quantity')
-        this.rounds.value = quantity.toString()
-        this.rounds.type = 'number'
-        this.rounds.min = '1'
+        this.quantity = document.createElement('input')
+        this.quantity.classList.add('quantity')
+        this.quantity.value = quantity.toString()
+        this.quantity.type = 'number'
+        this.quantity.min = '1'
 
         /**
          * Set timer for each round.
@@ -103,7 +108,7 @@ export class Round extends HTMLElement {
         remove.textContent = 'X'
         remove.addEventListener('click', () => this.remove())
 
-        this.append(this.name, this.type, this.rounds, this.timer, remove)
+        this.append(this.name, this.type, this.quantity, this.timer, remove)
     }
 
     /**

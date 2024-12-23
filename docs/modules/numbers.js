@@ -11,7 +11,6 @@ function random(min, max) {
 }
 
 /**
- * Returns
  * @param {number} min
  * @param {number} max
  * @param {number} amount
@@ -19,9 +18,15 @@ function random(min, max) {
  */
 function numbers(min, max, amount) {
     const numbers = new Set()
+
     while (numbers.size < amount)
-        numbers.add(random(min ,max).toString())
-    return Array.from(numbers)
+        numbers.add(random(min, max).toString())
+
+    return Array
+        .from(numbers)
+        .sort(
+            (a, b) => Number.parseInt(a) - Number.parseInt(b)
+        )
 }
 /**
 * @param {"tutorial" | "fácil" | "médio" | "difícil" | string} difficulty 

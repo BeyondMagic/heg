@@ -1,193 +1,218 @@
 /**
+ * @typedef {import('../round.js').Round} Round
  * @typedef {import('../game.js').Game} Game
  */
 
-import { sleep } from '../utils.js';
+
+import { Card } from '../card.js';
+import { Player } from '../player.js';
+import { sleep, shuffle } from '../utils.js';
+import { prepare } from './prepare.js';  
+import { results } from './results.js';
 
 /**
+ * Play a new game.
  * @param {Game} game
  */
-export function play (game) {
-    // this.rounds = vai ser as rodadas definidas no começo do jogo
-    // a próxima rodada é sempre a primeira
-    // a gente dele a primeira depois de acabar a rodada
-    const players = game.players
-    const roundConfig = game.rounds[0]
-    const totalRounds = parseInt(roundConfig?.rounds.value)
-    const gameDifficulty = roundConfig?.type.value;
-    let currentRound = 1
-    let currentPlayer = 0;
-    let seconds = parseInt(roundConfig?.timer.value)
+export async function play (game) {
 
-    // title element
-    const playerTurn = document.createElement('div')
-    playerTurn.classList.add('player-turn')
-    playerTurn.textContent = `Turno de: ${players[currentPlayer].name}`
+    for (const round of game.rounds)
+    {
+        const repeat = Number.parseInt(round.quantity.value)
 
-    // cards element
-    const cardsContainer = document.createElement('div')
-    cardsContainer.classList.add('cards-container')
+        for (let i = 1; i <= repeat; ++i)
+        {
+            const original = round.module.render(round.type.value)
 
-    // generate used numbers
-    // use first module in the array
-    const shuffledCards = roundConfig.module.render(gameDifficulty)
-    const correctOrder = shuffledCards.slice().sort((a, b) => (Number.parseInt(a) - Number.parseInt(b)))
-
-    console.log("before:", shuffledCards)
-    console.log("correct:", correctOrder)
-    shuffledCards.sort(() => Math.random() - 0.5)
-    let currentOrder = shuffledCards.slice()
-    console.log("after:", currentOrder)
-    
-    // timer
-    const timer = document.createElement('div')
-    timer.classList.add('timer', 'turn')
-    timer.textContent = `Tempo restante: ${seconds}`
-    
-    //progress bar
-    const progressBarContainer = document.createElement('div')
-    progressBarContainer.classList.add('progress-bar-container')
-    const progressBar = document.createElement('div')
-    progressBar.classList.add('progress-bar')
-    progressBar.style.width = '0%'
-    progressBarContainer.appendChild(progressBar)
-
-    const updatePlayerTurnTitle = () => {
-        playerTurn.textContent = `Turno de: ${players[currentPlayer].name}`
-    }
-
-    const startTimerInterval = () => { 
-        const timerInterval = setInterval(() => {
-            seconds--;
-            if(seconds === 0) {
-                clearInterval(timerInterval)
-                alert('Acabou o tempo!')
-                
-                endTurn()
-            } else {
-                timer.textContent = `Tempo restante: ${seconds}`
+            const deck = {
+                original: original,
+                shuffled: shuffle(original)
             }
-        }, 1000)
+
+            const seconds = Number.parseInt(round.timer.value)
+
+            for (const player of game.players)
+            {
+                console.log(`Preparing ${player.name} to play ${round.name.value} in ${i} time.`)
+                game.clear()
+                await prepare(game, player)
+                await turn(game, player, deck, seconds)
+            }
+
+            game.clear()
+            results(game, 'between')
+        }
     }
 
-    const startTurn = () => {
-        seconds = parseInt(roundConfig?.timer.value)
-        updatePlayerTurnTitle()
-        updateProgressBar()
+    game.clear()
+    results(game, 'end')
+}
 
-        currentOrder = shuffledCards.slice()
-        cardsContainer.innerHTML = ''
-        shuffledCards.forEach((value,index) => {
-            const card = document.createElement('div')
-            card.classList.add('card')
-            card.textContent = value.toString()
-            card.dataset.index = index.toString()
-            card.addEventListener('click', () => handleCardClick(card))
-            cardsContainer.appendChild(card)
-        });
-
-        timer.textContent = `Tempo restante: ${seconds}`
-        startTimerInterval()
-    }
-
-    const endTurn = () => {
-        currentPlayer++
-        if(currentPlayer >= players.length) {
-            currentPlayer = 0;
-            currentRound++
+/**
+ * Start timer of this turn.
+ * @param {HTMLElement} timer 
+ * @param {number} seconds 
+ * @returns {number}
+ */
+function start_timer (timer, seconds) { 
+    const interval = window.setInterval(() => {
+        seconds--;
+        if (seconds) {
+            timer.textContent = `Tempo restante: ${seconds}!`
+        } else {
+            window.clearInterval(interval)
         }
+    }, 1000)
 
-        if(currentRound > totalRounds) {
-            alert('Jogo concluídol!')
-            game.screen('results')
-            return
-        }
+    return interval
+}
 
-        startTurn();
-    }
-   
-    const updateProgressBar = () => {
-        const correcPositions =  currentOrder.reduce((acc, val, idx) => 
-            (val === correctOrder[idx] ? acc + 1 : acc), 0
-        )
-        const progress = Math.round((correcPositions / currentOrder.length) * 100)
-        progressBar.style.width = `${progress}%`
-    }
+/**
+ * Update progress bar and returns if it's corrected.
+ * @param {Array<string>} original
+ * @param {Array<Card>} player_cards 
+ * @param {HTMLElement} bar 
+ * @returns {boolean}
+ */
+function update_progress (original, player_cards, bar) {
 
-    let firstCardSelected = null;
-    const swaps = [];
-    let isSwapping = false;
-
-    // por turno: criar swap, salvar por jogador
-
-    // para cada rodada
-        // para cada rodada.quantidade
-            // para cada jogador
-                // tela prepara
-                // ele joga
-                // salva swaps (inversões)
-            // ranking dessa rodada
-    // acabou todas as rodadas e quantidades
-    // ranking geral
-    // salva os players no LocalStorage
-    
-    const handleCardClick = (card) => {
-        if(isSwapping) return;
-
-        if(firstCardSelected === null) {
-            firstCardSelected = card;
-            card.classList.add('selected');
-        }
-        else if(card === firstCardSelected) {
-            firstCardSelected.classList.remove('selected');
-            firstCardSelected = null;
-        }
-        else {
-            const secondCardSelected = card;
-
-            swaps.push( {
-                first: {index: firstCardSelected.dataset.index, value: firstCardSelected.textContent},
-                second: {index: secondCardSelected.dataset.index, value: secondCardSelected.textContent},
-            })
-
-            isSwapping = true;
-            firstCardSelected.classList.add('swapping');
-            secondCardSelected.classList.add('swapping');   
-
-            setTimeout(async () => {
-                const temp = firstCardSelected.textContent;
-                firstCardSelected.textContent = secondCardSelected.textContent;
-                secondCardSelected.textContent = temp;
-
-                firstCardSelected.classList.remove('selected', 'swapping');
-                secondCardSelected.classList.remove('selected', 'swapping');
-                
-                const firstIndex = parseInt(firstCardSelected.dataset.index);
-                const secondIndex = parseInt(secondCardSelected.dataset.index);
-                [currentOrder[firstIndex], currentOrder[secondIndex]] = [
-                    currentOrder[secondIndex],
-                    currentOrder[firstIndex],
-                ];
-
-                firstCardSelected = null;
-                isSwapping = false;
-
-                updateProgressBar();
-
-                if (JSON.stringify(currentOrder) === JSON.stringify(correctOrder)) {
-                    await sleep(1500) 
-                    alert("Parabéns! Você ordenou todos os cartões!");
-                    endTurn();
-                }
-            }, 500);
+    const correct = player_cards.reduce(
+        (accumulated, card, index) => {
+            
+            const text = card.textContent;
+            const orig = original[index];
 
             
+
+            console.log(`card: ${text} "${text.length}", orig: "${orig}" ${orig.length}`, text === orig)
+
+            return (card.textContent === original[index] ? accumulated + 1 : accumulated)
         }
+        
+    , 0)
+
+    const progress = Math.round((correct / player_cards.length) * 100);
+    bar.style.width = `${progress}%`;
+
+    console.log(progress);
+
+    return progress === 100;
+}
+
+/**
+ * End this turn.
+ * @param {number} interval 
+ * @param {(value: void | PromiseLike<void>) => void} resolve 
+ */
+async function end (interval, resolve) {  
+    window.clearInterval(interval);
+    // To-do: animation of ending.
+    await sleep(1000);
+    resolve()
+}
+
+/**
+ * Play turn of player.
+ * @param {Game} game 
+ * @param {Player} player 
+ * @param {{original: Array<string>, shuffled: Array<string>}} deck
+ * @param {number} seconds
+ * @returns {Promise<void>}
+ */
+async function turn (game, player, deck, seconds) {
+
+    const container = {
+        player: document.createElement('div'),
+        cards: document.createElement('div'),
+        timer: document.createElement('div'),
+        progress: document.createElement('div'),
     }
 
-    console.log("Swaps:", swaps)
-
-    game.body.append(playerTurn, cardsContainer, timer, progressBarContainer)
+    // Player title.
+    container.player.classList.add('player', 'title')
+    container.player.textContent = `Turno de: ${player.name}`
     
-    startTurn()
+    // Container to put cards.
+    container.cards.classList.add('cards-container')
+
+    // Timer to wait sorting of cards.
+    container.timer.classList.add('timer', 'turn')
+    container.timer.textContent = `Tempo restante: ${seconds}!`
+
+    // Progress bar of shuffled deck.
+    container.progress.classList.add('progress-bar-container')
+    const bar = document.createElement('div')
+    bar.classList.add('progress-bar')
+    bar.style.width = '0%';
+
+    container.progress.append(bar)
+
+    /**
+     * Selected card to swap.
+     * @type {Card | null}
+     */
+    let selected_card = null;
+
+    const interval = start_timer(container.timer, seconds)
+
+    game.body.append(
+        container.player,
+        container.cards,
+        container.timer,
+        container.progress
+    )
+
+    // Resolve when `player_cards` is sorted.
+    return new Promise(async resolve => {
+
+        /**
+         * @type {Array<Card>}
+         */
+        const player_cards = []
+
+        for (const [index, value] of deck.shuffled.entries())
+        {
+            const card = new Card(value, index)
+            player_cards.push(card)
+    
+            card.addEventListener('click', async () => {
+    
+                // If has selected card.
+                if (!selected_card)
+                {
+                    // Select this card.
+                    card.classList.add('selected')
+                    selected_card = card;
+                    return;
+                }
+
+                // If same card, unselect.
+                if (selected_card == card)
+                {
+                    selected_card.classList.remove('selected')
+                
+                // If card different, swap.
+                } else {
+                    // To-do: ++swaps for this player.
+                    console.log(card.index, selected_card.index)
+                    card.swap(selected_card);
+                    console.log(card.index, selected_card.index)
+
+                    const is_sorted = update_progress(deck.original, player_cards, bar)
+                
+                    if (is_sorted)
+                        await end(interval, resolve);
+                }
+
+                selected_card = null;
+            })
+    
+            container.cards.append(card)
+        }
+
+        const is_sorted = update_progress(deck.original, player_cards, bar)
+                
+        if (is_sorted)
+            await end(interval, resolve);
+    })
 }

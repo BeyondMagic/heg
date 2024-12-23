@@ -28,6 +28,7 @@ export function config(game) {
     cards.append(hover)
     
     hover.addEventListener('click', () => game.screen('selection'))
+    
     /**
      * Rounds to configure.
      **/
@@ -88,7 +89,10 @@ export function config(game) {
     }
 
     for (const round of game.rounds)
+    {
         round.name.value = round.pre_name
+        round.type.value = round.pre_type
+    }
         
     /**
      * Button to add more rounds.
@@ -114,18 +118,27 @@ export function config(game) {
     button.classList.add('button', 'continue')
     button.textContent = 'Começar!'
     button.addEventListener('click', () => {
-        game.screen('prepare')
 
-        const data = game.rounds.map(round => {
+        const rounds = 
+            Array
+            .from(
+                /** @type {NodeListOf<Round>} */ (document.querySelectorAll('game-round'))  
+            )
+
+        const data = rounds.map(round => {
             return {
                 name: round.name.value,
                 type: round.type.value,
-                quantity: round.rounds.value,
+                quantity: round.quantity.value,
                 timer: round.timer.value,
             }
         })
 
         localStorage.setItem('last_rounds', JSON.stringify(data))
+
+        console.log(data);
+
+        game.screen('play')
     })
     game.body.append(cards, rounds, add, button)
 }
