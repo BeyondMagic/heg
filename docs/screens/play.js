@@ -86,12 +86,13 @@ function calculate_points (player, turn, swaps) {
 
 /**
  * End this turn.
+ * @param {Game} game
  * @param {Player} player 
  * @param {Turn} turn
  * @param {Metric} swaps 
  * @param {Clear} clear
  */
-async function end (player, turn, swaps, clear) {  
+async function end (game, player, turn, swaps, clear) {  
     window.clearInterval(clear.interval);
 
     const turn_points = calculate_points(player, turn, swaps);
@@ -99,8 +100,8 @@ async function end (player, turn, swaps, clear) {
 
     console.log(`Player "${player.name} took"`, turn, `and got ${turn_points} points for a total of ${player.points}.`)
 
+    game.clear()
     // To-do: animation of ending.
-    
     await sleep(5000);
 
     console.log(player.points)
@@ -110,6 +111,7 @@ async function end (player, turn, swaps, clear) {
 
 /**
  * Start timer of this turn.
+ * @param {Game} game 
  * @param {Player} player
  * @param {HTMLElement} timer 
  * @param {Turn} turn
@@ -117,12 +119,12 @@ async function end (player, turn, swaps, clear) {
  * @param {(value: void | PromiseLike<void>) => void} resolve End the turn.
  * @returns {number}
  */
-function start_timer (player, timer, turn, swaps, resolve) { 
+function start_timer (game, player, timer, turn, swaps, resolve) { 
     const interval = window.setInterval(() => {
         if (--turn.left)
             timer.textContent = `Tempo restante: ${turn.left}!`
         else
-            end(player, turn, swaps, {interval, resolve})
+            end(game, player, turn, swaps, {interval, resolve})
     }, 1000)
 
     return interval
@@ -195,7 +197,7 @@ async function turn (game, player, deck, swaps, seconds) {
          * @type {Clear}
          */
         const clear = {
-            interval: start_timer(player, container.timer, turn, swaps, resolve),
+            interval: start_timer(game, player, container.timer, turn, swaps, resolve),
             resolve,
         }
 
@@ -234,7 +236,7 @@ async function turn (game, player, deck, swaps, seconds) {
                     const is_sorted = update_progress(turn, deck.original, player_cards, bar)
                 
                     if (is_sorted)
-                        await end(player, turn, swaps, clear);
+                        await end(game, player, turn, swaps, clear);
                 }
 
                 selected_card = null;
@@ -246,7 +248,7 @@ async function turn (game, player, deck, swaps, seconds) {
         const is_sorted = update_progress(turn, deck.original, player_cards, bar)
                 
         if (is_sorted)
-            await end(player, turn, swaps, clear);
+            await end(game, player, turn, swaps, clear);
     })
 }
 
