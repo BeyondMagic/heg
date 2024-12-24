@@ -25,7 +25,7 @@ export async function prepare(game, player) {
     instructions.classList.add('instructions')
 
     const start = document.createElement('div')
-    start.classList.add('start', 'prepare-button')
+    start.classList.add('button', 'continue')
     start.textContent = 'Pronto!'
 
     const countdown = document.createElement('h2')
@@ -37,6 +37,7 @@ export async function prepare(game, player) {
     return new Promise(resolve => {
         start.addEventListener('click', async () => {
 
+            turn.remove()
             start.remove()
             instructions.remove()
         

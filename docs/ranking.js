@@ -1,17 +1,16 @@
 export class Ranking extends HTMLElement {
     /*
      * @param {string} name Name of the player.
+     * @param {number} points How many points for this position.
      * @param {number} percentage Percentage between 0 and 100%.
      * @param {number} rank Position of the player in the ranking.
      */
-    constructor(name, percentage, number) {
+    constructor(name, points, percentage, number) {
         super()
-
-        console.log(name)
 
         this.append(
             this.label(name),
-            this.bar(percentage),
+            this.bar(points, percentage),
             this.position(number)
         )
     }
@@ -33,13 +32,17 @@ export class Ranking extends HTMLElement {
     }
 
     /**
+     * @param {number} points 
      * @param {number} percentage 
      * @private
      */
-    bar(percentage) {
+    bar(points, percentage) {
         const bar = document.createElement("div");
-        bar.classList.add('bar')
+        bar.classList.add('bar', 'center')
         bar.style.height = `${percentage}%`;
+        console.log(bar.style.height)
+
+        bar.textContent = points.toString()
 
         const container = document.createElement("div");
         container.classList.add('container', 'bar')

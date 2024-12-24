@@ -1,14 +1,31 @@
+/**
+ * @typedef {{
+ *  name: string,
+ *  module: string,
+ *  type: string,
+ *  time: number,
+ *  took: number,
+ *  points: number,
+ * }} Result
+ */
+
 import { Ranking } from "./ranking.js"
 
 export class Player {
     /**
-     * @param {string} name 
-     * @param {number} points 
+     * @param {string} name
+     * @param {number} points
      */
     constructor(name, points) {
         this.name = name
         this.points = points
         this.swaps = 0
+
+        /**
+         * Results of each turn for player.
+         * @type {Array<Result>}
+         */
+        this.results = []
     }
 
     /**
@@ -19,6 +36,7 @@ export class Player {
     ranking(best, position) {
         return new Ranking(
             this.name,
+            this.points,
             Math.round(this.points / best * 100),
             position
         )
@@ -26,8 +44,8 @@ export class Player {
 }
 
 /**
- * @param {Player} a 
- * @param {Player} b 
+ * @param {Player | Result} a 
+ * @param {Player | Result} b 
  * @returns {number}
  */
 function compare(a, b) {
@@ -36,8 +54,8 @@ function compare(a, b) {
 
 /**
  * Returns sorted list of players.
- * @param {Array<Player>} players 
- * @return {Array<Player>}
+ * @param {Array<Player | Result>} players 
+ * @return {Array<Player | Result>}
  */
 export function sort (players) {
     return players.sort(compare)

@@ -53,7 +53,7 @@ export function config(game) {
     labels.deck.classList.add('deck')
     labels.type.classList.add('type')
     labels.quantity.classList.add('quantity')
-    labels.timer.classList.add('timer')
+    labels.timer.classList.add('timer-input')
     labels.remove.classList.add('remove')
 
     labels.container.append(

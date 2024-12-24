@@ -3,6 +3,7 @@
 /**
  * @typedef {import('./player_card.js').PlayerCard} PlayerCard
  * @typedef {import('./player.js').Player} Player
+ * @typedef {import('./player.js').Result} Result
  * @typedef {import('./round.js').Round} Round
  */
 
@@ -15,7 +16,7 @@ export class Game {
 
     /**
      * @param {HTMLElement} body
-     * @param {Array<Player>} [ranking_players=[]]
+     * @param {Array<Result>} [ranking_players=[]]
      * @param {Array<PlayerCard>} [player_cards=[]]
      * @param {Array<Round>} [rounds=[]] 
      */
@@ -62,7 +63,7 @@ export class Game {
 
         switch (name) {
             case 'home':
-                home(this, this.players)
+                home(this, this.ranking)
                 break;
             case 'selection':
                 selection(this)

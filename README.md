@@ -21,7 +21,10 @@ Além disso, o jogo foi gamificado com o intuito de jogadores poderem aprender m
 Ordenar números é como afinar uma orquestra caótica para uma sinfonia harmoniosa!!
 
 ## Screenshots
-Adicione 3 ou mais screenshots do projeto em funcionamento.
+
+<img src="./.github/1.png">
+<img src="./.github/2.png">
+<img src="./.github/3.png">
 
 ## Instalação
 
@@ -56,7 +59,7 @@ Adicione 3 ou mais screenshots do projeto em funcionamento.
 
 # Video de apresentação
 
-[Video de apresentação em 23/12/2024 do projeto **Harmonia e Guerra**]()
+[Video de apresentação em 23/12/2024 do projeto **Harmonia e Guerra**](https://youtu.be/bD_GFxRsSCI)
 
 Renan V. Guedes
 - Introdução

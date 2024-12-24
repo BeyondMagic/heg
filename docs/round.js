@@ -95,7 +95,7 @@ export class Round extends HTMLElement {
          * Set timer for each round.
          */
         this.timer = document.createElement('input')
-        this.timer.classList.add('timer')
+        this.timer.classList.add('timer-input')
         this.timer.value = timer.toString()
         this.timer.type = 'number'
         this.timer.min = '1'

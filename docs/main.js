@@ -1,4 +1,7 @@
-import { Player } from "./player.js"
+/**
+ * @typedef {import('./player.js').Result} Result
+ */
+
 import { PlayerCard } from "./player_card.js"
 import { Round } from "./round.js"
 import { Game } from "./game.js"
@@ -28,26 +31,21 @@ function read (field) {
  * Information of localStorage, data not parsed.
  */
 const info = {
-    players: /** @type {Array<{name: string, points: number}>} */ (read('players')),
+    players: /** @type {Array<Result>} */ (read('players')),
     cards: /** @type {Array<string>} */ (read('last_cards')),
     rounds: /** @type {Array<{name: string, type: string, quantity: number, timer: number}>} */ (read('last_rounds'))
 }
 
 /**
  * @type {{
- *   players: Array<Player>,
  *   cards: Array<PlayerCard>,
  *   rounds: Array<Round>
  * }}
  */
 const data = {
-    players: [],
     cards: [],
     rounds: []
 }
-
-for (const player of info.players)
-    data.players.push(new Player(player.name, player.points))
 
 for (const name of info.cards)
     data.cards.push(new PlayerCard(name))
@@ -57,13 +55,9 @@ for (const round of info.rounds)
 
 const game = new Game(
     body,
-    data.players,
+    info.players,
     data.cards,
     data.rounds
 );
 
 game.screen('home')
-//game.screen('selection')
-//game.screen('config')
-//game.screen('prepare')
-// game.screen('play')

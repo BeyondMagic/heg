@@ -1,7 +1,8 @@
 /**
  * @typedef {import('../round.js').Round} Round
  * @typedef {import('../game.js').Game} Game
- * @typedef {{total: number, left: number, swaps: number, progress: number}} Turn
+ * @typedef {{game: Game, module: string, type: string}} Info
+ * @typedef {{seconds: number, left: number, swaps: number, progress: number}} Turn
  * @typedef {{average: number, best: number}} Metric
  * @typedef {{interval: number, resolve: (value: void | PromiseLike<void>) => void}} Clear
  */
@@ -54,7 +55,7 @@ function calculate_points (player, turn, swaps) {
 	let points = turn.progress
 
     // Scale time to half.
-	let timeBonus = Math.round((turn.left / turn.total) * base / 2);
+	let timeBonus = Math.round((turn.left / turn.seconds) * base / 2);
     const close_best = Math.round(swaps.best * close_range)
 
     let penalty = 0;
@@ -86,23 +87,33 @@ function calculate_points (player, turn, swaps) {
 
 /**
  * End this turn.
- * @param {Game} game
+ * @param {Info} info
  * @param {Player} player 
  * @param {Turn} turn
  * @param {Metric} swaps 
  * @param {Clear} clear
  */
-async function end (game, player, turn, swaps, clear) {  
+async function end (info, player, turn, swaps, clear) {  
     window.clearInterval(clear.interval);
 
     const turn_points = calculate_points(player, turn, swaps);
     player.points += turn_points;
 
+    player.results.push({
+        name: player.name,
+        module: info.module,
+        type: info.type,
+        time: turn.seconds,
+        took: turn.left,
+        points: turn_points,
+    })
+
+    console.log(player.results)
     console.log(`Player "${player.name} took"`, turn, `and got ${turn_points} points for a total of ${player.points}.`)
 
-    game.clear()
+    info.game.clear()
     // To-do: animation of ending.
-    await sleep(5000);
+    //await sleep(5000);
 
     console.log(player.points)
 
@@ -111,7 +122,7 @@ async function end (game, player, turn, swaps, clear) {
 
 /**
  * Start timer of this turn.
- * @param {Game} game 
+ * @param {Info} info 
  * @param {Player} player
  * @param {HTMLElement} timer 
  * @param {Turn} turn
@@ -119,12 +130,12 @@ async function end (game, player, turn, swaps, clear) {
  * @param {(value: void | PromiseLike<void>) => void} resolve End the turn.
  * @returns {number}
  */
-function start_timer (game, player, timer, turn, swaps, resolve) { 
+function start_timer (info, player, timer, turn, swaps, resolve) { 
     const interval = window.setInterval(() => {
         if (--turn.left)
             timer.textContent = `Tempo restante: ${turn.left}!`
         else
-            end(game, player, turn, swaps, {interval, resolve})
+            end(info, player, turn, swaps, {interval, resolve})
     }, 1000)
 
     return interval
@@ -132,14 +143,14 @@ function start_timer (game, player, timer, turn, swaps, resolve) {
 
 /**
  * Play turn of player.
- * @param {Game} game 
+ * @param {Info} info
  * @param {Player} player 
  * @param {{original: Array<string>, shuffled: Array<string>}} deck
  * @param {Metric} swaps 
  * @param {number} seconds
  * @returns {Promise<void>}
  */
-async function turn (game, player, deck, swaps, seconds) {
+async function turn (info, player, deck, swaps, seconds) {
 
     const container = {
         player: document.createElement('div'),
@@ -150,7 +161,7 @@ async function turn (game, player, deck, swaps, seconds) {
 
     // Player title.
     container.player.classList.add('player', 'title')
-    container.player.textContent = `Turno de: ${player.name}`
+    container.player.textContent = `Turno de ${player.name}`
     
     // Container to put cards.
     container.cards.classList.add('cards-container')
@@ -173,7 +184,7 @@ async function turn (game, player, deck, swaps, seconds) {
      */
     let selected_card = null;
 
-    game.body.append(
+    info.game.body.append(
         container.player,
         container.cards,
         container.timer,
@@ -187,7 +198,7 @@ async function turn (game, player, deck, swaps, seconds) {
          * @type {Turn}
          */
         const turn = {
-            total: seconds,
+            seconds: seconds,
             left: seconds,
             swaps: 0,
             progress: 0
@@ -197,7 +208,7 @@ async function turn (game, player, deck, swaps, seconds) {
          * @type {Clear}
          */
         const clear = {
-            interval: start_timer(game, player, container.timer, turn, swaps, resolve),
+            interval: start_timer(info, player, container.timer, turn, swaps, resolve),
             resolve,
         }
 
@@ -210,8 +221,13 @@ async function turn (game, player, deck, swaps, seconds) {
         {
             const card = new Card(value, index)
             player_cards.push(card)
+
+            let swapping = false;
     
             card.addEventListener('click', async () => {
+
+                if (swapping)
+                    return;
     
                 // If has selected card.
                 if (!selected_card)
@@ -231,12 +247,14 @@ async function turn (game, player, deck, swaps, seconds) {
                 } else {
                     ++player.swaps;
                     ++turn.swaps;
+                    swapping = true;
                     card.swap(selected_card);
+                    swapping = false;
 
                     const is_sorted = update_progress(turn, deck.original, player_cards, bar)
                 
                     if (is_sorted)
-                        await end(game, player, turn, swaps, clear);
+                        await end(info, player, turn, swaps, clear);
                 }
 
                 selected_card = null;
@@ -248,7 +266,7 @@ async function turn (game, player, deck, swaps, seconds) {
         const is_sorted = update_progress(turn, deck.original, player_cards, bar)
                 
         if (is_sorted)
-            await end(game, player, turn, swaps, clear);
+            await end(info, player, turn, swaps, clear);
     })
 }
 
@@ -286,14 +304,22 @@ export async function play (game) {
                 console.log(`Preparing ${player.name} to play ${round.name.value} in ${i} time.`)
                 game.clear()
                 await prepare(game, player)
-                await turn(game, player, deck, swaps, seconds)
+                game.clear()
+                await turn(
+                    {
+                        game,
+                        module: round.module.name,
+                        type: round.type.value
+                    },
+                    player,
+                    deck,
+                    swaps,
+                    seconds
+                )
             }
 
             game.clear()
-            results(game, 'between')
+            await results(game, 'between')
         }
     }
-
-    game.clear()
-    results(game, 'end')
 }
