@@ -1,25 +1,27 @@
 /**
  * @typedef {import('../round.js').Round} Round
  * @typedef {import('../game.js').Game} Game
- * @typedef {{total: number, took: number, swaps: number}} Turn
+ * @typedef {{total: number, left: number, swaps: number, progress: number}} Turn
+ * @typedef {{average: number, best: number}} Metric
  * @typedef {{interval: number, resolve: (value: void | PromiseLike<void>) => void}} Clear
  */
 
 import { Card } from '../card.js';
 import { Player } from '../player.js';
-import { sleep, shuffle } from '../utils.js';
+import { sleep } from '../utils.js';
 import { prepare } from './prepare.js';  
 import { results } from './results.js';
-
+import { shuffle, average_swaps, min_swaps } from '../module.js';
 
 /**
  * Update progress bar and returns if it's corrected.
+ * @param {Turn} turn 
  * @param {Array<string>} original
  * @param {Array<Card>} player_cards 
  * @param {HTMLElement} bar 
  * @returns {boolean}
  */
-function update_progress (original, player_cards, bar) {
+function update_progress (turn, original, player_cards, bar) {
 
     const correct = player_cards.reduce(
         (accumulated, card, index) =>
@@ -29,25 +31,79 @@ function update_progress (original, player_cards, bar) {
     const progress = Math.round((correct / player_cards.length) * 100);
     bar.style.width = `${progress}%`;
 
-    console.log(progress);
+    turn.progress = progress;
 
     return progress === 100;
 }
 
 /**
+ * Calculate the points of the player... (simple calculation).
+ * @param {Player} player
+ * @param {Turn} turn
+ * @param {Metric} swaps
+ * @returns {number}
+ */
+function calculate_points (player, turn, swaps) {
+
+    // Base is 100 because of percentage.
+    const base = 100
+
+    // Small penalty (20% close above).
+    const close_range = 1.25
+    
+	let points = turn.progress
+
+    // Scale time to half.
+	let timeBonus = Math.round((turn.left / turn.total) * base / 2);
+    const close_best = Math.round(swaps.best * close_range)
+
+    let penalty = 0;
+
+    // If paassed the average, then penalty.
+    if (turn.swaps > swaps.average)
+        penalty = (turn.swaps - swaps.average) * 5;
+    
+    // If equal to minimum, bonus.
+    else if (turn.swaps === swaps.best)
+        penalty = -base * 2;
+
+    // If above the close range for best, then small penalty.
+    else if (turn.swaps > close_best)
+        penalty = (turn.swaps - swaps.best) * 2;
+
+    // Smallest penalty for getting too close
+    else if (turn.swaps <= close_best)
+        penalty = (turn.swaps - swaps.best);
+
+	// If array is completely sorted, then extra points!!!
+	const bonus = turn.progress === base ? base : 0;
+
+	const total = points + timeBonus - penalty + bonus;
+
+    // No negative points!
+	return Math.max(0, total);
+}
+
+/**
  * End this turn.
  * @param {Player} player 
- * @param {Turn} time
+ * @param {Turn} turn
+ * @param {Metric} swaps 
  * @param {Clear} clear
  */
-async function end (player, time, clear) {  
+async function end (player, turn, swaps, clear) {  
     window.clearInterval(clear.interval);
 
-    // To-do: animation of ending.
-    console.log(`Player "${player.name} took"`, time)
+    const turn_points = calculate_points(player, turn, swaps);
+    player.points += turn_points;
 
+    console.log(`Player "${player.name} took"`, turn, `and got ${turn_points} points for a total of ${player.points}.`)
+
+    // To-do: animation of ending.
+    
     await sleep(5000);
-    // To-do: calculate pontuation of player.
+
+    console.log(player.points)
 
     clear.resolve()
 }
@@ -57,15 +113,16 @@ async function end (player, time, clear) {
  * @param {Player} player
  * @param {HTMLElement} timer 
  * @param {Turn} turn
+ * @param {Metric} swaps
  * @param {(value: void | PromiseLike<void>) => void} resolve End the turn.
  * @returns {number}
  */
-function start_timer (player, timer, turn, resolve) { 
+function start_timer (player, timer, turn, swaps, resolve) { 
     const interval = window.setInterval(() => {
-        if (--turn.took)
-            timer.textContent = `Tempo restante: ${turn.took}!`
+        if (--turn.left)
+            timer.textContent = `Tempo restante: ${turn.left}!`
         else
-            end(player, turn, {interval, resolve})
+            end(player, turn, swaps, {interval, resolve})
     }, 1000)
 
     return interval
@@ -76,10 +133,11 @@ function start_timer (player, timer, turn, resolve) {
  * @param {Game} game 
  * @param {Player} player 
  * @param {{original: Array<string>, shuffled: Array<string>}} deck
+ * @param {Metric} swaps 
  * @param {number} seconds
  * @returns {Promise<void>}
  */
-async function turn (game, player, deck, seconds) {
+async function turn (game, player, deck, swaps, seconds) {
 
     const container = {
         player: document.createElement('div'),
@@ -128,15 +186,16 @@ async function turn (game, player, deck, seconds) {
          */
         const turn = {
             total: seconds,
-            took: seconds,
-            swaps: 0
+            left: seconds,
+            swaps: 0,
+            progress: 0
         }
 
         /**
          * @type {Clear}
          */
         const clear = {
-            interval: start_timer(player, container.timer, turn, resolve),
+            interval: start_timer(player, container.timer, turn, swaps, resolve),
             resolve,
         }
 
@@ -172,10 +231,10 @@ async function turn (game, player, deck, seconds) {
                     ++turn.swaps;
                     card.swap(selected_card);
 
-                    const is_sorted = update_progress(deck.original, player_cards, bar)
+                    const is_sorted = update_progress(turn, deck.original, player_cards, bar)
                 
                     if (is_sorted)
-                        await end(player, turn, clear);
+                        await end(player, turn, swaps, clear);
                 }
 
                 selected_card = null;
@@ -184,10 +243,10 @@ async function turn (game, player, deck, seconds) {
             container.cards.append(card)
         }
 
-        const is_sorted = update_progress(deck.original, player_cards, bar)
+        const is_sorted = update_progress(turn, deck.original, player_cards, bar)
                 
         if (is_sorted)
-            await end(player, turn, clear);
+            await end(player, turn, swaps, clear);
     })
 }
 
@@ -204,11 +263,19 @@ export async function play (game) {
         for (let i = 1; i <= repeat; ++i)
         {
             const original = round.module.render(round.type.value)
-
             const deck = {
                 original: original,
                 shuffled: shuffle(original)
             }
+
+            /**
+             * @type {Metric}
+             */
+            const swaps = {
+                average: min_swaps(deck.original, deck.shuffled),
+                best: min_swaps(deck.original, deck.shuffled)
+            }
+
 
             const seconds = Number.parseInt(round.timer.value)
 
@@ -217,7 +284,7 @@ export async function play (game) {
                 console.log(`Preparing ${player.name} to play ${round.name.value} in ${i} time.`)
                 game.clear()
                 await prepare(game, player)
-                await turn(game, player, deck, seconds)
+                await turn(game, player, deck, swaps, seconds)
             }
 
             game.clear()

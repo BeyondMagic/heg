@@ -15,11 +15,6 @@ export class Card extends HTMLElement {
          * Value of this card (which is shown)
          */
         this.textContent = value
-
-        /**
-         * Position of the index in the shuffled array (to switch there, too!)
-         */
-        this.index = index
     }
 
     /**
@@ -31,13 +26,10 @@ export class Card extends HTMLElement {
         this.classList.add('selected', 'swapping');
         card.classList.add('selected', 'swapping');
 
-        const temp = {
-            value: this.textContent,
-            index: this.index
-        };
+        const value = this.textContent
 
-        [this.textContent, this.index] = [card.textContent, card.index];
-        [card.textContent, card.index] = [temp.value, temp.index];
+        this.textContent = card.textContent
+        card.textContent = value
 
         await sleep(500);
 

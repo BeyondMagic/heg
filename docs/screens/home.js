@@ -29,6 +29,7 @@ export function home (game, players) {
     // Only add ranking if there are previous players.
     if (!result.length)
         return
+    
     /**
      * Ranking section.
      */
