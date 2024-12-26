@@ -1,72 +1,9 @@
-# Harmonia e Guerra (HeG)
+# Harmomonia e Guerra (HeG)
 
-**Número da Lista**: 15<br>
-**Conteúdo da Disciplina**: D&C<br>
+A game where a group of players are presented, one by one, with a list of scrambled numbers and must then sort it as efficiently as possible, counting time, and of course, the number of inversions needed to get there, as their points are calculated this way.
 
-## Alunos
+Several rounds with different difficulties can be used.
 
-| Matrícula  | Aluno                                  |
-| ---------- | -------------------------------------- |
-| 22/1022604 | João Victor da Silva Batista de Farias |
-| 22/1031363 | Renan Vieira Guedes                    |
+In addition, the game has been gamified so that players can learn more about musical notes!
 
-## Sobre
-
-Um jogo onde um grupo de players são apresentados, um por um, a uma lista de números embaralhadas e devem então classificá-la da forma mais eficiente possível, contando tempo, e é claro, número de inversões necessárias para chegar lá, pois seus pontos são calculados assim.
-
-Podem ser usados vários rodadas com dificuldades diferentes.
-
-Além disso, o jogo foi gamificado com o intuito de jogadores poderem aprender mais sobre notas músicais!
-
-Ordenar números é como afinar uma orquestra caótica para uma sinfonia harmoniosa!!
-
-## Screenshots
-
-<img src="./.github/1.png">
-<img src="./.github/2.png">
-<img src="./.github/3.png">
-
-## Instalação
-
-**Linguagem**: Javascript, HTML, CSS<br>
-
-1. Clone o Repositório
-
-```
-    https://github.com/projeto-de-algoritmos-2024/DeC_HarmoniaEGuerra
-```
-
-2. Você vai precisar ter o [node.js](https://nodejs.org/pt) instalado
-3. Intale o `http-server`:
-
-```
-    npm install --global http-server
-```
-
-4. Navegue até o diretório do projeto
-
-```
-    cd Grafos2_Neuron/
-```
-
-5. Por fim, rode o projeto:
-
-```
-    http-server docs/
-```
-
-6. Acesse o projeto em http://127.0.0.1:8080
-
-# Video de apresentação
-
-[Video de apresentação em 23/12/2024 do projeto **Harmonia e Guerra**](https://youtu.be/bD_GFxRsSCI)
-
-Renan V. Guedes
-- Introdução
-- Protótipo
-- Site
-
-João V. Farias
-- Implementação
-- Código
-- Estilização
+Sorting numbers is like tuning a chaotic orchestra to a harmonious symphony!!
