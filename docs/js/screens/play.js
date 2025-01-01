@@ -2,7 +2,7 @@
  * @typedef {import('../round.js').Round} Round
  * @typedef {import('../game.js').Game} Game
  * @typedef {{game: Game, module: string, type: string}} Info
- * @typedef {{seconds: number, left: number, swaps: number, progress: number}} Turn
+ * @typedef {{seconds: number, left: number, swaps: number, progress: number, cards: number}} Turn
  * @typedef {{average: number, best: number}} Metric
  * @typedef {{interval: number, resolve: (value: void | PromiseLike<void>) => void}} Clear
  */
@@ -199,6 +199,7 @@ async function turn (info, player, deck, swaps, seconds) {
          */
         const turn = {
             seconds: seconds,
+            // cards: vai dormir
             left: seconds,
             swaps: 0,
             progress: 0
@@ -276,9 +277,13 @@ async function turn (info, player, deck, swaps, seconds) {
  */
 export async function play (game) {
 
+    console.log("rounds to play", game.rounds)
+
     for (const round of game.rounds)
     {
         const repeat = Number.parseInt(round.quantity.value)
+
+        console.log("repeat", repeat)
 
         for (let i = 1; i <= repeat; ++i)
         {
@@ -298,6 +303,9 @@ export async function play (game) {
 
 
             const seconds = Number.parseInt(round.timer.value)
+
+
+            console.log("jogadores para jogar:", game.players)
 
             for (const player of game.players)
             {

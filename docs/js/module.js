@@ -30,7 +30,8 @@ export class Module {
 
 /**
  * Shuffle an array using Fisher–Yates (aka Knuth) algorithm.
- * @param {Array<string>} array 
+ * @param {Array<any>} array 
+ * @returns {Array<any>}
  */
 export function shuffle (array) {
     const copy = [...array]
@@ -39,6 +40,35 @@ export function shuffle (array) {
         [copy[i], copy[j]] = [copy[j], copy[i]];
     }
     return copy
+}
+
+/**
+ * Derange an array.
+ * @param {Array<any>} array 
+ * @returns {Array<any>}
+ */
+export function derange(array) {
+    const n = array.length;
+
+	const result = [...array];
+
+    if (n === 1)
+		return result;
+    
+    for (let i = 0; i < n - 1; i++)
+	{
+        // Choose a random index different.
+        const j = Math.floor(Math.random() * (n - i - 1)) + i + 1;
+
+        // Swap elements.
+        [result[i], result[j]] = [result[j], result[i]];
+    }
+
+    // Swap last element.
+    if (result[n - 1] === array[n - 1])
+        [result[n - 1], result[n - 2]] = [result[n - 2], result[n - 1]];
+
+    return result;
 }
 
 /**

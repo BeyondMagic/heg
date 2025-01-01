@@ -59,4 +59,5 @@ export function results(game, type)
     button.addEventListener('click', () => game.screen('home'))
 
     game.body.append(button)
+    game.players = []
 }
